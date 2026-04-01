@@ -85,7 +85,7 @@ services:
     working_dir: /root
     command: peer node start
     volumes:
-      - /var/run/docker.sock:/host/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
       - ../organizations/peerOrganizations/discom.smartmeterchain.com/peers/peer0.discom.smartmeterchain.com:/etc/hyperledger/fabric
       - peer0.discom.smartmeterchain.com:/var/hyperledger/production
     ports:
@@ -132,7 +132,7 @@ services:
     working_dir: /root
     command: peer node start
     volumes:
-      - /var/run/docker.sock:/host/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
       - ../organizations/peerOrganizations/regulator.smartmeterchain.com/peers/peer0.regulator.smartmeterchain.com:/etc/hyperledger/fabric
       - peer0.regulator.smartmeterchain.com:/var/hyperledger/production
     ports:
