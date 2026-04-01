@@ -29,8 +29,8 @@ export default function BillingPage() {
     try {
       const res = await api.generateBill({
         meter_id: formData.meter_id,
-        period_start: formData.period_start + 'T00:00:00Z',
-        period_end: formData.period_end + 'T23:59:59Z',
+        period_start: formData.period_start,
+        period_end: formData.period_end,
       })
       setMsg({ text: `Bill ${res.data?.bill_id || ''} generated! Amount: INR ${res.data?.amount?.toFixed(2) || '0'}`, type: 'success' })
       setShowForm(false)
