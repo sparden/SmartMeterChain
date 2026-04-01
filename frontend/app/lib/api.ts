@@ -100,7 +100,7 @@ export const api = {
     }),
   resolveDispute: (disputeId: string, resolution: string) =>
     fetchAPI<any>(`/disputes/${disputeId}/resolve`, {
-      method: 'POST',
+      method: 'PUT',
       body: JSON.stringify({ resolution }),
     }),
 
@@ -115,7 +115,7 @@ export const api = {
 
   // Alerts
   acknowledgeAlert: (alertId: number) =>
-    fetchAPI<any>(`/alerts/${alertId}/acknowledge`, { method: 'POST' }),
+    fetchAPI<any>(`/dashboard/alerts/ack?id=${alertId}`, { method: 'POST' }),
 
   // Profile
   getProfile: () => fetchAPI<any>('/profile'),
