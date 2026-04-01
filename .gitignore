@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+backend/smartmeterchain.db
+backend/tmp/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vinxi/
+
+# Rust
+simulator/target/
+
+# Flutter
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env
+.env
+.env.local
