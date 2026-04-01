@@ -4,13 +4,26 @@ import { api } from '../lib/api'
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [msg, setMsg] = useState({ text: '', type: '' })
 
-  useEffect(() => {
+  const loadAlerts = () => {
     api.getAlerts(1)
       .then((res) => setAlerts(res.data?.items || []))
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [])
+  }
+
+  useEffect(() => { loadAlerts() }, [])
+
+  const handleAcknowledge = async (id: number) => {
+    try {
+      await api.acknowledgeAlert(id)
+      setMsg({ text: `Alert #${id} acknowledged`, type: 'success' })
+      loadAlerts()
+    } catch (err: any) {
+      setMsg({ text: err.message, type: 'error' })
+    }
+  }
 
   const severityColor = (s: string) => {
     switch (s) {
@@ -25,7 +38,24 @@ export default function AlertsPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800">Tamper Alerts</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-slate-800">Tamper Alerts</h2>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-500">{alerts.length} alerts</span>
+          <button
+            onClick={loadAlerts}
+            className="px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-300"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {msg.text && (
+        <div className={`p-3 rounded-lg text-sm ${msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          {msg.text}
+        </div>
+      )}
 
       <div className="space-y-3">
         {alerts.map((alert: any) => (
@@ -34,8 +64,26 @@ export default function AlertsPage() {
               <div className="flex items-center gap-3">
                 <span className="font-mono font-bold">{alert.meter_id}</span>
                 <span className="px-2 py-0.5 rounded text-xs font-medium uppercase">{alert.alert_type}</span>
+                <span className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${
+                  alert.severity === 'critical' ? 'bg-red-600 text-white' : ''
+                }`}>
+                  {alert.severity}
+                </span>
               </div>
-              <span className="text-xs">{alert.detected_at?.slice(0, 16)}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs">{alert.detected_at?.slice(0, 16)}</span>
+                {!alert.acknowledged && (
+                  <button
+                    onClick={() => handleAcknowledge(alert.ID)}
+                    className="px-2.5 py-1 bg-white border border-current rounded text-xs font-medium hover:opacity-80"
+                  >
+                    Acknowledge
+                  </button>
+                )}
+                {alert.acknowledged && (
+                  <span className="px-2 py-0.5 bg-green-200 text-green-800 rounded text-xs">Acknowledged</span>
+                )}
+              </div>
             </div>
             <p className="text-sm">{alert.description}</p>
             <div className="mt-2 text-xs opacity-75">

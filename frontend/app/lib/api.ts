@@ -25,6 +25,14 @@ export function clearToken() {
   }
 }
 
+export function getUser(): any {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('smc_user')
+    return stored ? JSON.parse(stored) : null
+  }
+  return null
+}
+
 async function fetchAPI<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken()
   const headers: Record<string, string> = {
@@ -69,12 +77,18 @@ export const api = {
   getMeters: (page = 1, perPage = 20) => fetchAPI<any>(`/meters?page=${page}&per_page=${perPage}`),
   getMeter: (id: string) => fetchAPI<any>(`/meters/${id}`),
   getReadings: (meterId: string, page = 1) => fetchAPI<any>(`/meters/${meterId}/readings?page=${page}`),
+  registerMeter: (data: { meter_id: string; consumer_id: string; location: string; meter_type: string }) =>
+    fetchAPI<any>('/meters', { method: 'POST', body: JSON.stringify(data) }),
 
   // Billing
   getBills: (consumerId?: string, page = 1) => {
     const params = consumerId ? `?consumer_id=${consumerId}&page=${page}` : `?page=${page}`
     return fetchAPI<any>(`/bills${params}`)
   },
+  generateBill: (data: { meter_id: string; period_start: string; period_end: string }) =>
+    fetchAPI<any>('/bills/generate', { method: 'POST', body: JSON.stringify(data) }),
+  payBill: (billId: string) =>
+    fetchAPI<any>(`/bills/${billId}/pay`, { method: 'POST' }),
   verifyBill: (billId: string) => fetchAPI<any>(`/verify/bill/${billId}`),
 
   // Disputes
@@ -84,12 +98,24 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ bill_id: billId, reason }),
     }),
+  resolveDispute: (disputeId: string, resolution: string) =>
+    fetchAPI<any>(`/disputes/${disputeId}/resolve`, {
+      method: 'POST',
+      body: JSON.stringify({ resolution }),
+    }),
+
+  // Consumers
+  getConsumers: (page = 1) => fetchAPI<any>(`/consumers?page=${page}`),
 
   // Tariffs
   getTariffs: (category?: string) => {
     const params = category ? `?category=${category}` : ''
     return fetchAPI<any>(`/tariffs${params}`)
   },
+
+  // Alerts
+  acknowledgeAlert: (alertId: number) =>
+    fetchAPI<any>(`/alerts/${alertId}/acknowledge`, { method: 'POST' }),
 
   // Profile
   getProfile: () => fetchAPI<any>('/profile'),

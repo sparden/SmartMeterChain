@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api } from '../lib/api'
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -21,16 +21,24 @@ export default function Dashboard() {
   const [stats, setStats] = useState<any>(null)
   const [trend, setTrend] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [lastRefresh, setLastRefresh] = useState<string>('')
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
     Promise.all([api.getStats(), api.getConsumptionTrend(30)])
       .then(([s, t]) => {
         setStats(s.data)
         setTrend(t.data || [])
+        setLastRefresh(new Date().toLocaleTimeString())
       })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    loadData()
+    const interval = setInterval(loadData, 15000)
+    return () => clearInterval(interval)
+  }, [loadData])
 
   if (loading) {
     return <div className="flex items-center justify-center h-64 text-slate-400">Loading dashboard...</div>
@@ -38,9 +46,19 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-400">Auto-refresh 15s | Last: {lastRefresh}</span>
+          <button
+            onClick={loadData}
+            className="px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-300"
+          >
+            Refresh Now
+          </button>
+        </div>
+      </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Active Meters" value={stats?.meters?.active || 0} subtitle="Total registered" color="text-blue-600" />
         <StatCard title="Today's Readings" value={stats?.readings?.today || 0} subtitle="Ingested today" color="text-green-600" />
@@ -48,29 +66,32 @@ export default function Dashboard() {
         <StatCard title="Open Disputes" value={stats?.disputes?.open || 0} subtitle="Pending resolution" color="text-amber-600" />
       </div>
 
-      {/* Tamper Alerts Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <StatCard title="Total Alerts" value={stats?.alerts?.total_alerts || 0} color="text-red-600" />
         <StatCard title="Unacknowledged" value={stats?.alerts?.unacknowledged || 0} color="text-orange-600" />
         <StatCard title="Critical" value={stats?.alerts?.critical || 0} color="text-red-700" />
       </div>
 
-      {/* Consumption Trend Chart */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
         <h3 className="text-lg font-semibold text-slate-700 mb-4">Consumption Trend (30 Days)</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={trend}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Line type="monotone" dataKey="avg_value" stroke="#2563eb" strokeWidth={2} name="Avg kWh" />
-            <Line type="monotone" dataKey="readings" stroke="#16a34a" strokeWidth={2} name="Readings" />
-          </LineChart>
-        </ResponsiveContainer>
+        {trend.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={trend}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Line type="monotone" dataKey="avg_value" stroke="#2563eb" strokeWidth={2} name="Avg kWh" />
+              <Line type="monotone" dataKey="readings" stroke="#16a34a" strokeWidth={2} name="Readings" />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-[300px] flex items-center justify-center text-slate-400 text-sm">
+            No consumption data yet. Simulator is generating readings — check back in a minute.
+          </div>
+        )}
       </div>
 
-      {/* Blockchain Badge */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-5 text-white">
         <div className="flex items-center gap-3">
           <span className="text-2xl">🔗</span>
