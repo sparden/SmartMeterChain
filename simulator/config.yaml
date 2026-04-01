@@ -1,0 +1,35 @@
+# SmartMeterChain Simulator Configuration
+api:
+  base_url: "http://localhost:3000/api/v1"
+  username: "admin"
+  password: "admin123"
+
+meters:
+  - id: "SM-DEL-001"
+    type: domestic
+    base_load_kwh: 0.5       # Base consumption per interval (kWh)
+    peak_multiplier: 2.5     # Peak hours multiplier
+    noise_factor: 0.15       # Random noise ±15%
+
+  - id: "SM-DEL-002"
+    type: domestic
+    base_load_kwh: 0.3
+    peak_multiplier: 2.0
+    noise_factor: 0.10
+
+  - id: "SM-MUM-001"
+    type: commercial
+    base_load_kwh: 5.0
+    peak_multiplier: 1.8
+    noise_factor: 0.20
+
+  - id: "SM-BLR-001"
+    type: industrial
+    base_load_kwh: 25.0
+    peak_multiplier: 1.3
+    noise_factor: 0.10
+
+simulation:
+  interval_seconds: 30        # Send reading every 30 seconds
+  cumulative: true            # Readings are cumulative (like real meters)
+  inject_anomaly_chance: 0.02 # 2% chance of injecting anomalous reading

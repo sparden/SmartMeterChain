@@ -1,0 +1,48 @@
+# SmartMeterChain — Root Docker Compose
+# Orchestrates: Fabric Network + Backend API + Frontend
+# Usage: docker compose up -d
+
+version: '3.8'
+
+services:
+  # ─── Backend API ────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smartmeterchain-api
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_PATH=/data/smartmeter.db
+      - FABRIC_ENABLED=false
+      - JWT_SECRET=${JWT_SECRET:-smartmeterchain-prod-secret}
+    volumes:
+      - api-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ─── Frontend (Static Build) ────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smartmeterchain-frontend
+    ports:
+      - "3001:3001"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api/v1
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  api-data:
+
+# To also run the Fabric network, use:
+# docker compose -f docker-compose.yaml -f blockchain/network/docker-compose-fabric.yaml up -d

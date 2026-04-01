@@ -1,0 +1,27 @@
+{
+  "name": "SmartMeterChain Dev",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/go:1": { "version": "1.22" },
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/rust:1": { "version": "latest" }
+  },
+  "forwardPorts": [3000, 3001, 5984, 7050, 7051, 9051],
+  "portsAttributes": {
+    "3000": { "label": "Backend API", "onAutoForward": "notify" },
+    "3001": { "label": "Frontend Dashboard", "onAutoForward": "openBrowser" },
+    "5984": { "label": "CouchDB", "onAutoForward": "silent" }
+  },
+  "postCreateCommand": "bash deploy/setup-github-codespaces.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "rust-lang.rust-analyzer",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

@@ -1,0 +1,32 @@
+# SmartMeterChain — Crypto Material Generation Config
+# Used by cryptogen tool to generate MSP certificates
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: smartmeterchain.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+        SANS:
+          - localhost
+
+PeerOrgs:
+  - Name: Discom
+    Domain: discom.smartmeterchain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+    Users:
+      Count: 1
+
+  - Name: Regulator
+    Domain: regulator.smartmeterchain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+    Users:
+      Count: 1

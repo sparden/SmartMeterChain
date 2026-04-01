@@ -1,0 +1,170 @@
+# SmartMeterChain — Hyperledger Fabric Network
+# 2 Orgs: DISCOM (power utility) + Regulator (state electricity board)
+# 1 Orderer (Raft), 1 peer per org, CouchDB state databases
+
+version: '3.7'
+
+volumes:
+  orderer.smartmeterchain.com:
+  peer0.discom.smartmeterchain.com:
+  peer0.regulator.smartmeterchain.com:
+
+networks:
+  smartmeter:
+    name: smartmeter_network
+
+services:
+  # ─── Orderer ────────────────────────────────────────────
+  orderer.smartmeterchain.com:
+    container_name: orderer.smartmeterchain.com
+    image: hyperledger/fabric-orderer:2.5
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_TLS_CLIENTROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+    working_dir: /root
+    command: orderer
+    volumes:
+      - ../organizations/ordererOrganizations/smartmeterchain.com/orderers/orderer.smartmeterchain.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/smartmeterchain.com/orderers/orderer.smartmeterchain.com/tls:/var/hyperledger/orderer/tls
+      - orderer.smartmeterchain.com:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+      - 7053:7053
+    networks:
+      - smartmeter
+
+  # ─── DISCOM Peer ────────────────────────────────────────
+  couchdb.discom:
+    container_name: couchdb.discom
+    image: couchdb:3.3
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 5984:5984
+    networks:
+      - smartmeter
+
+  peer0.discom.smartmeterchain.com:
+    container_name: peer0.discom.smartmeterchain.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=peer0.discom.smartmeterchain.com
+      - CORE_PEER_ADDRESS=peer0.discom.smartmeterchain.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.discom.smartmeterchain.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.discom.smartmeterchain.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.discom.smartmeterchain.com:7051
+      - CORE_PEER_LOCALMSPID=DiscomMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.discom:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+    working_dir: /root
+    command: peer node start
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../organizations/peerOrganizations/discom.smartmeterchain.com/peers/peer0.discom.smartmeterchain.com:/etc/hyperledger/fabric
+      - peer0.discom.smartmeterchain.com:/var/hyperledger/production
+    ports:
+      - 7051:7051
+    depends_on:
+      - couchdb.discom
+    networks:
+      - smartmeter
+
+  # ─── Regulator Peer ─────────────────────────────────────
+  couchdb.regulator:
+    container_name: couchdb.regulator
+    image: couchdb:3.3
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw
+    ports:
+      - 7984:5984
+    networks:
+      - smartmeter
+
+  peer0.regulator.smartmeterchain.com:
+    container_name: peer0.regulator.smartmeterchain.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=peer0.regulator.smartmeterchain.com
+      - CORE_PEER_ADDRESS=peer0.regulator.smartmeterchain.com:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.regulator.smartmeterchain.com:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.regulator.smartmeterchain.com:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.regulator.smartmeterchain.com:9051
+      - CORE_PEER_LOCALMSPID=RegulatorMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.regulator:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+    working_dir: /root
+    command: peer node start
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../organizations/peerOrganizations/regulator.smartmeterchain.com/peers/peer0.regulator.smartmeterchain.com:/etc/hyperledger/fabric
+      - peer0.regulator.smartmeterchain.com:/var/hyperledger/production
+    ports:
+      - 9051:9051
+    depends_on:
+      - couchdb.regulator
+    networks:
+      - smartmeter
+
+  # ─── Fabric CLI ─────────────────────────────────────────
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:2.5
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.discom.smartmeterchain.com:7051
+      - CORE_PEER_LOCALMSPID=DiscomMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/discom.smartmeterchain.com/peers/peer0.discom.smartmeterchain.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/discom.smartmeterchain.com/peers/peer0.discom.smartmeterchain.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/discom.smartmeterchain.com/peers/peer0.discom.smartmeterchain.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/discom.smartmeterchain.com/users/Admin@discom.smartmeterchain.com/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - ../organizations:/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations
+      - ../chaincode:/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode
+      - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts
+    depends_on:
+      - peer0.discom.smartmeterchain.com
+      - peer0.regulator.smartmeterchain.com
+    networks:
+      - smartmeter

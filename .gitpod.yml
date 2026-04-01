@@ -1,0 +1,41 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - name: Setup
+    init: bash deploy/setup-gitpod.sh
+    command: echo "Ready! Run ./start-all.sh or start services individually"
+
+  - name: Backend
+    command: cd backend && go mod tidy && go run main.go
+
+  - name: Frontend
+    command: cd frontend && npm install && npm run dev -- --host 0.0.0.0
+
+  - name: Simulator
+    command: |
+      sleep 5
+      cd simulator && cargo run --release -- --register
+
+ports:
+  - port: 3000
+    onOpen: notify
+    name: Backend API
+  - port: 3001
+    onOpen: open-browser
+    name: Frontend Dashboard
+  - port: 5984
+    onOpen: ignore
+    name: CouchDB
+  - port: 7050
+    onOpen: ignore
+    name: Fabric Orderer
+  - port: 7051
+    onOpen: ignore
+    name: Fabric Peer
+
+vscode:
+  extensions:
+    - golang.go
+    - rust-lang.rust-analyzer
+    - bradlc.vscode-tailwindcss
