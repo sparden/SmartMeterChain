@@ -1,12 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { api } from '~/lib/api'
+import { api } from '../lib/api'
 
-export const Route = createFileRoute('/tariffs')({
-  component: TariffsPage,
-})
-
-function TariffsPage() {
+export default function TariffsPage() {
   const [tariffs, setTariffs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 

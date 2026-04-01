@@ -1,12 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { api, setToken } from '~/lib/api'
+import { useNavigate } from 'react-router-dom'
+import { api, setToken } from '../lib/api'
 
-export const Route = createFileRoute('/login')({
-  component: LoginPage,
-})
-
-function LoginPage() {
+export default function LoginPage() {
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -22,7 +18,7 @@ function LoginPage() {
       const res = await api.login(username, password)
       setToken(res.data.token)
       localStorage.setItem('smc_user', JSON.stringify(res.data))
-      navigate({ to: '/' })
+      navigate('/')
     } catch (err: any) {
       setError(err.message || 'Login failed')
     } finally {

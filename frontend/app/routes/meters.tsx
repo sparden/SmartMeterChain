@@ -1,12 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { api } from '~/lib/api'
+import { api } from '../lib/api'
 
-export const Route = createFileRoute('/meters')({
-  component: MetersPage,
-})
-
-function MetersPage() {
+export default function MetersPage() {
   const [meters, setMeters] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 

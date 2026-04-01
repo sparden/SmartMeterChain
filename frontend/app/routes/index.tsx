@@ -1,14 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { api } from '~/lib/api'
+import { api } from '../lib/api'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line,
 } from 'recharts'
-
-export const Route = createFileRoute('/')({
-  component: Dashboard,
-})
 
 function StatCard({ title, value, subtitle, color }: {
   title: string; value: string | number; subtitle?: string; color: string
@@ -22,7 +17,7 @@ function StatCard({ title, value, subtitle, color }: {
   )
 }
 
-function Dashboard() {
+export default function Dashboard() {
   const [stats, setStats] = useState<any>(null)
   const [trend, setTrend] = useState<any[]>([])
   const [loading, setLoading] = useState(true)

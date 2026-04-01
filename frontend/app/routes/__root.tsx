@@ -1,19 +1,9 @@
-import { createRootRoute, Outlet, Link, useRouter } from '@tanstack/react-router'
+import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
-import '../styles.css'
 
-export const Route = createRootRoute({
-  component: RootLayout,
-})
-
-function RootLayout() {
-  const router = useRouter()
-  const path = router.state.location.pathname
-  const isLoginPage = path === '/login'
-
-  if (isLoginPage) {
-    return <Outlet />
-  }
+export default function RootLayout() {
+  const location = useLocation()
+  const path = location.pathname
 
   return (
     <div className="flex h-screen overflow-hidden">

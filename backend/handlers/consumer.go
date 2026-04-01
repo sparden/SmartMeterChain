@@ -93,8 +93,10 @@ func (h *ConsumerHandler) GetConsumers(c *fiber.Ctx) error {
 }
 
 // LoginHandler is the standalone login function used in main routes
-func LoginHandler(cfg interface{ JWTSecret string }) fiber.Handler {
-	return nil // placeholder
+func LoginHandler(jwtSecret string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		return HandleLogin(c, jwtSecret)
+	}
 }
 
 // HandleLogin processes authentication

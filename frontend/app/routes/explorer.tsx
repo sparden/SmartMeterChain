@@ -1,12 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { api } from '~/lib/api'
+import { api } from '../lib/api'
 
-export const Route = createFileRoute('/explorer')({
-  component: ExplorerPage,
-})
-
-function ExplorerPage() {
+export default function ExplorerPage() {
   const [billId, setBillId] = useState('')
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
