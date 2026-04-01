@@ -74,10 +74,10 @@ impl MeterGenerator {
 
         MeterReading {
             meter_id: self.config.id.clone(),
-            reading: (self.cumulative_reading * 100.0).round() / 100.0,
+            reading: f64::round(self.cumulative_reading * 100.0) / 100.0,
             timestamp: now.timestamp(),
-            temperature: (temperature * 10.0).round() / 10.0,
-            voltage: (voltage * 10.0).round() / 10.0,
+            temperature: f64::round(temperature * 10.0) / 10.0,
+            voltage: f64::round(voltage * 10.0) / 10.0,
             is_anomaly,
         }
     }
