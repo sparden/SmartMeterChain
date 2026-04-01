@@ -73,6 +73,7 @@ services:
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.discom.smartmeterchain.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.discom.smartmeterchain.com:7051
       - CORE_PEER_LOCALMSPID=DiscomMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
@@ -119,6 +120,7 @@ services:
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.regulator.smartmeterchain.com:9051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.regulator.smartmeterchain.com:9051
       - CORE_PEER_LOCALMSPID=RegulatorMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
